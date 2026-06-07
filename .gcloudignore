@@ -1,0 +1,10 @@
+.gcloudignore
+.git
+.gitignore
+node_modules
+dist
+*.md
+GoogleCloudSDKInstaller.exe
+google-cloud-sdk.zip
+.env*.local
+.vercel
