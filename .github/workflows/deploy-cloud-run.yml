@@ -1,0 +1,47 @@
+name: Deploy resumora-net to Cloud Run
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  SERVICE: resumora-net
+  REGION: us-central1
+  BUCKET: resumora-data-333
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout resumora.net (main)
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "${{ env.SERVICE }}" \
+            --source . \
+            --region "${{ env.REGION }}" \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 8080 \
+            --add-volume "name=data,type=cloud-storage,bucket=${{ env.BUCKET }}" \
+            --add-volume-mount "volume=data,mount-path=/mnt/data"
+
+      - name: Print service URL
+        run: |
+          gcloud run services describe "${{ env.SERVICE }}" \
+            --region "${{ env.REGION }}" \
+            --format "value(status.url)"
