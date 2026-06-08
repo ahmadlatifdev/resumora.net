@@ -1,31 +1,31 @@
-# Cloud Build → Cloud Run (continuous deploy from GitHub main)
-# Used when Cloud Run source repository = ahmadlatifdev/resumora.net
-
 substitutions:
   _SERVICE: resumora-net
   _REGION: us-central1
   _BUCKET: resumora-data-333
 
 steps:
+  # Build the container image
   - name: gcr.io/cloud-builders/docker
     args:
       - build
       - -t
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/${_SERVICE}:$COMMIT_SHA
+      - ${_REGION}-docker.pkg.dev/331578538870/cloud-run-source-deploy/${_SERVICE}:$COMMIT_SHA
       - .
 
+  # Push the image to Artifact Registry
   - name: gcr.io/cloud-builders/docker
     args:
       - push
-      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/${_SERVICE}:$COMMIT_SHA
+      - ${_REGION}-docker.pkg.dev/331578538870/cloud-run-source-deploy/${_SERVICE}:$COMMIT_SHA
 
+  # Deploy to Cloud Run
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
     args:
       - run
       - deploy
       - ${_SERVICE}
-      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/${_SERVICE}:$COMMIT_SHA
+      - --image=${_REGION}-docker.pkg.dev/331578538870/cloud-run-source-deploy/${_SERVICE}:$COMMIT_SHA
       - --region=${_REGION}
       - --platform=managed
       - --allow-unauthenticated
@@ -34,7 +34,7 @@ steps:
       - --add-volume-mount=volume=data,mount-path=/mnt/data
 
 images:
-  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/${_SERVICE}:$COMMIT_SHA
+  - ${_REGION}-docker.pkg.dev/331578538870/cloud-run-source-deploy/${_SERVICE}:$COMMIT_SHA
 
 options:
   logging: CLOUD_LOGGING_ONLY
